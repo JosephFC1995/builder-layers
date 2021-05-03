@@ -27,7 +27,7 @@
         }"
         :class="{drawing : drawing}"
         id="builder--block"
-        :flats="listGraphics"
+        :flats="listGraphics" 
       />
     </div>
     <div class="builder--actions flex justify-center">
