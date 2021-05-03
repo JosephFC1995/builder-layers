@@ -34,6 +34,10 @@
       <div class="actions flex justify-center items-center">
         <div
           class="transition actions--items bg-white h-13 w-13 rounded-full flex justify-center items-center mx-3 cursor-pointer font-bold uppercase">
+          -1
+        </div>
+        <div
+          class="transition actions--items bg-white h-13 w-13 rounded-full flex justify-center items-center mx-3 cursor-pointer font-bold uppercase">
           a
         </div>
         <div
