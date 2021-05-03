@@ -35,5 +35,4 @@
     ".nuxt",
     "dist"
   ],
-  "noImplicitAny": false
 }

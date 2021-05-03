@@ -25,25 +25,10 @@
           transformOrigin: '0px 0px 0px',
           transform: transformComputed
         }"
+        :class="{drawing : drawing}"
         id="builder--block"
+        :flats="listGraphics"
       />
-    </div>
-    <div class="code--floating">
-      <pre class="pre_code">
-<!--        {{ positionCursor }}-->
-        <!--        {{ clickPress }}-->
-        <!--        {{ keySpacePress }}-->
-        <!--        ====-->
-        <!--        B-->
-        <!--        {{ builderPosition }}-->
-        <!--        ====-->
-        <!--        {{ initPositionCursor }}-->
-        <!--        ====-->
-        <!--        {{ computedCoordinates }}-->
-        <!--        ====-->
-        <!--        {{ tempBuilderPosition }}-->
-        {{ listGraphics }}
-      </pre>
     </div>
     <div class="builder--actions flex justify-center">
       <div class="actions flex justify-center items-center">
@@ -57,8 +42,13 @@
         </div>
         <div
           class="transition actions--items bg-white h-13 w-13 rounded-full flex justify-center items-center mx-3 cursor-pointer  font-bold uppercase"
-          data-action="start-draw" @click="drawMap">
+          data-action="start-draw" @click="drawMap" v-if="!drawing">
           c
+        </div>
+        <div
+          class="transition actions--items bg-white h-13 w-13 rounded-full flex justify-center items-center mx-3 cursor-pointer  font-bold uppercase"
+          data-action="start-draw" @click="drawMap" v-else>
+          x
         </div>
         <div
           class="transition actions--items bg-white h-13 w-13 rounded-full flex justify-center items-center mx-3 cursor-pointer  font-bold uppercase"
@@ -74,31 +64,24 @@
 import Vue from "vue";
 import { Coordinates } from "~/classes/Coordinates";
 import * as _ from "lodash";
-import { Position } from "~/classes/SVG/Position";
+import { random } from "~/utils/String";
+import { SVGPosition } from "~/classes/SVG/SVGPosition";
 import { SVG } from "~/classes/SVG/SVG";
+import { Coordinate } from "~/interfaces/Coordinate";
+import BuilderBlock from "~/components/BuilderBlock.vue";
 
 export default Vue.extend({
+  components: { BuilderBlock },
   data() {
     return {
       clickPress: false as boolean,
       keySpacePress: false as boolean,
-      listGraphics: new Array<SVG>(),
-      tempBuilderPosition: {
-        x: 100,
-        y: 100
-      } as Coordinates,
-      builderPosition: {
-        x: 100,
-        y: 100
-      } as Coordinates,
-      initPositionCursor: {
-        x: 0,
-        y: 0
-      } as Coordinates,
-      positionCursor: {
-        x: 0,
-        y: 0
-      } as Coordinates,
+      drawing: false as boolean,
+      listGraphics: [] as Array<SVG>,
+      tempBuilderPosition: new Coordinates(100, 100),
+      builderPosition: new Coordinates(100, 100),
+      initPositionCursor: new Coordinates(100, 100),
+      positionCursor: new Coordinates(100, 100),
       scale: 1 as number
     };
   },
@@ -131,60 +114,59 @@ export default Vue.extend({
       this.positionCursor.y = 0;
     },
     resetCamera() {
-      this.builderPosition = {
-        x: 100,
-        y: 100
-      };
+      this.builderPosition.x = 100;
+      this.builderPosition.y = 100;
       this.scale = 1;
     },
     drawMap() {
       let _self = (this as any);
-      let _svg = new SVG();
-      var poly2 = new _self.$svg("builder--block--container").size("100%", "100%").fill("none").stroke("#fff").polygon().draw({ snapToGrid: 20 });
+      let _svg: SVG;
+      let poly2 = new _self.$svg("builder--block--container").size("100%", "100%").addClass("drawing-area").fill("none").stroke({
+        color: "#ffffff",
+        width: 2
+      }).polygon().draw({ snapToGrid: 20 });
+      this.drawing = true;
+      let svgDraw = document.getElementsByClassName("svg--flat");
+      for (let i = 0; i < svgDraw.length; i++) {
+        svgDraw[i].classList.add("lock");
+      }
 
       poly2.on("drawstart", function(e: any) {
         document.addEventListener("keydown", function(e) {
           if (e.keyCode == 13 || e.which == 13) {
             poly2.draw("done");
             poly2.off("drawstart");
+          } else if (e.keyCode == 27 || e.which == 27) {
+            poly2.draw("cancel");
+            let drawingArea : any = document.getElementsByClassName("drawing-area");
+            while (drawingArea.length > 0) {
+              drawingArea[0].parentNode.removeChild(drawingArea[0]);
+            }
+
           }
+          for (let i = 0; i < svgDraw.length; i++) {
+            svgDraw[i].classList.remove("lock");
+          }
+          _self.drawing = false;
         });
       });
       let node: any = null;
       let parentNode: any = null;
-      poly2.on("drawstop", function() {
-        console.log(poly2);
+      poly2.on("drawdone", function() {
         node = poly2.node;
         parentNode = poly2.node.parentNode;
-        let id = node.id;
-        console.log(node);
-        console.log(parentNode);
-        console.log("========");
-        const bBox: object = node.getBBox();
-        var points = node.points;
-        console.log({ points });
-        console.log({ bBox });
+        const bBox: SVGRect = node.getBBox();
+        let points = node.points;
         let arrayPoints: Array<SVGPointList> = _.cloneDeep([...points]);
         let _arrayCoordinates: Array<Coordinates> = [];
         arrayPoints.map((point: any) => {
-          let _point = new Coordinates();
-          _point.x = point.x - bBox.x;
-          _point.y = point.y - bBox.y;
+          const _point = new Coordinates(point.x - bBox.x, point.y - bBox.y);
           _arrayCoordinates.push(_point);
           return point;
         });
-        console.log(bBox);
-        let _position = new Position();
-        _position.setBbox(bBox);
-        _svg.position = _position;
-        _svg.d = _arrayCoordinates;
-        // _svg.d = arrayPoints;
+        let _position = new SVGPosition(bBox.height, bBox.width, bBox.x, bBox.y);
+        _svg = new SVG(random(15, "svg_"), _position, _arrayCoordinates);
         _self.listGraphics.push(_svg);
-        // parentNode.style.position = "absolute";
-        // parentNode.style.transform = "translate(" + bBox.x + "px, " + bBox.y + "px)";
-        // parentNode.attributes.width.value = bBox.width + "px";
-        // parentNode.attributes.height.value = bBox.height + "px";
-        // console.log(arrayPoints);
         parentNode.remove();
       });
 
@@ -203,7 +185,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    computedCoordinates(): Coordinates {
+    computedCoordinates(): Coordinate {
       return {
         x: (this.clickPress && this.keySpacePress) ? this.initPositionCursor.x - this.positionCursor.x : 0,
         y: (this.clickPress && this.keySpacePress) ? this.initPositionCursor.y - this.positionCursor.y : 0
@@ -221,17 +203,7 @@ export default Vue.extend({
   },
   mounted(): void {
     this.tempBuilderPosition = _.cloneDeep(this.builderPosition);
-    // var draw = SVG("builder--block--container").style({
-    //   cursor: 'pointer',
-    //   position: 'absolute',
-    //   width: '100px',
-    //   height: '100px'
-    // });
-    // let rect = draw.rect(100, 100).move(0, 0).fill("#f06");
-    // rect.selectize().resize();
 
-
-    //poly2.selectize();
   },
   destroyed(): void {
   }

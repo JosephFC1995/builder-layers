@@ -2,30 +2,36 @@
   <div class="builder--block" ref="BuilderBlock" :style="{width : width + 'px', height : height + 'px'}">
     <div class="builder--block--diagram">
       <div class="diagram--container" id="builder--block--container">
-
+        <BuilderSVG v-for="(flat, index) in flats" :key="index" :flat="flat" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref } from "@vue/composition-api";
-import Vue from "vue";
+import Vue, { PropOptions } from "vue";
+import BuilderSVG from "~/components/BuilderSVG.vue";
 
-export default Vue.extend(
-  {
-    data() {
-      return {
-        width: 1000,
-        height: 1000
-      };
-    },
-    mounted(): void {
-      this.width = window.innerWidth - 200;
-      this.height = window.innerHeight + 200;
+export default Vue.extend({
+  name: "BuilderBlock",
+  components: { BuilderSVG },
+  props: {
+    flats: {
+      type: Array
     }
-  }
-);
+  },
+  data() {
+    return {
+      width: 1000,
+      height: 1000
+    };
+  },
+  mounted(): void {
+    this.width = window.innerWidth - 200;
+    this.height = window.innerHeight + 200;
+  },
+  watch: {}
+});
 </script>
 
 <style lang="scss" scoped>
@@ -40,6 +46,14 @@ export default Vue.extend(
       position: relative;
       height: 100%;
       width: 100%;
+    }
+
+    &.drawing {
+      cursor: crosshair !important;
+
+      .svg--flat {
+        pointer-events: none !important;
+      }
     }
   }
 }
