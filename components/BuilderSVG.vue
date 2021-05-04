@@ -57,7 +57,7 @@ export default Vue.extend({
         stringD += (index == 0 ? "M" : (index == 1) ? "L" : "") + values(pointPath).join(",") + " ";
       });
       stringD += stringD + "z";
-      let pathSVG = document.getElementById(_self.flat.id + "_path");
+      let pathSVG: any = document.getElementById(_self.flat.id + "_path");
       pathSVG.setAttribute("d", stringD);
       _self.svgElement.setAttribute("width", String((pathSVG.getBoundingClientRect().width + 40)));
       _self.svgElement.setAttribute("height", String((pathSVG.getBoundingClientRect().height + 40)));
