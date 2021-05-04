@@ -15,7 +15,9 @@ export default {
     script: []
   },
 
-  css: [],
+  css: [
+    "@/assets/scss/app.scss"
+  ],
 
   plugins: [
     {
@@ -23,6 +25,9 @@ export default {
     },
     {
       src: "@/plugins/svg", mode: "client"
+    },
+    {
+      src: "@/plugins/interact", mode: "client"
     }
   ],
 

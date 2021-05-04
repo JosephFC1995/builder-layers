@@ -127,7 +127,7 @@ export default Vue.extend({
       let _svg: SVG;
       let poly2 = new _self.$svg("builder--block--container").size("100%", "100%").addClass("drawing-area").fill("none").stroke({
         color: "#ffffff",
-        width: 2
+        width: 3
       }).polygon().draw({ snapToGrid: 20 });
       this.drawing = true;
       let svgDraw = document.getElementsByClassName("svg--flat");
@@ -142,7 +142,7 @@ export default Vue.extend({
             poly2.off("drawstart");
           } else if (e.keyCode == 27 || e.which == 27) {
             poly2.draw("cancel");
-            let drawingArea : any = document.getElementsByClassName("drawing-area");
+            let drawingArea: any = document.getElementsByClassName("drawing-area");
             while (drawingArea.length > 0) {
               drawingArea[0].parentNode.removeChild(drawingArea[0]);
             }
@@ -164,7 +164,7 @@ export default Vue.extend({
         let arrayPoints: Array<SVGPointList> = _.cloneDeep([...points]);
         let _arrayCoordinates: Array<Coordinates> = [];
         arrayPoints.map((point: any) => {
-          const _point = new Coordinates(point.x - bBox.x, point.y - bBox.y);
+          const _point = new Coordinates(point.x - bBox.x + 20, point.y - bBox.y + 20);
           _arrayCoordinates.push(_point);
           return point;
         });
