@@ -27,12 +27,13 @@
       "@nuxt/types",
       "@nuxtjs/axios",
       "@types/lodash",
-      "@types/node"
+      "@types/node",
+      "@interactjs/types"
     ]
   },
   "exclude": [
     "node_modules",
     ".nuxt",
     "dist"
-  ],
+  ]
 }
